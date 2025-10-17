@@ -1,5 +1,5 @@
 {
-    "name": "changelog-log",
+    "name": "@lukeocodes/changelog-log",
     "version": "0.0.2",
     "description": "GitHub Action: detect new changelog entries and post JSON webhooks",
     "keywords": [
