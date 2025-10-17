@@ -1,0 +1,58 @@
+name: "Changelog Log"
+description: "Detect new changelog entries and POST them as JSON to a webhook"
+inputs:
+  file_globs:
+    description: "Comma-separated glob patterns to watch"
+    required: false
+    default: "CHANGELOG.md,**/CHANGELOG.md,**/changelog.md,**/CHANGELOG*.md,**/changelog*.md"
+  entry_separator_regex:
+    description: "Regex (multiline) that matches the start of an entry header"
+    required: false
+    default: "^##\\s+.*$"
+  webhook_url:
+    description: "Destination URL for JSON payloads"
+    required: true
+  webhook_headers_json:
+    description: 'Optional JSON string of extra headers (e.g. {"X-Api-Key":"..."})'
+    required: false
+  http_method:
+    description: "HTTP method to use when sending"
+    required: false
+    default: "POST"
+  include_body_raw:
+    description: "Include raw entry body in payload"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: "pnpm"
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Install action dependencies
+      shell: bash
+      run: |
+        pnpm -C "$GITHUB_ACTION_PATH" install --prod --no-frozen-lockfile
+
+    - id: run
+      name: Detect and post new changelog entries
+      shell: bash
+      run: |
+        node "$GITHUB_ACTION_PATH/main.js"
+      env:
+        FILE_GLOBS: ${{ inputs.file_globs }}
+        ENTRY_SEPARATOR_REGEX: ${{ inputs.entry_separator_regex }}
+        WEBHOOK_URL: ${{ inputs.webhook_url }}
+        WEBHOOK_HEADERS_JSON: ${{ inputs.webhook_headers_json }}
+        HTTP_METHOD: ${{ inputs.http_method }}
+        INCLUDE_BODY_RAW: ${{ inputs.include_body_raw }}
+        BEFORE: ${{ github.event.before }}
+        AFTER: ${{ github.sha }}

@@ -1,0 +1,40 @@
+{
+    "name": "changelog-log",
+    "version": "0.0.1",
+    "description": "GitHub Action: detect new changelog entries and post JSON webhooks",
+    "keywords": [
+        "github-action",
+        "changelog",
+        "webhook",
+        "notifications",
+        "keep-a-changelog",
+        "release-automation"
+    ],
+    "license": "MIT",
+    "author": "Luke Oliff <luke@lukeoliff.com> (https://lukeoliff.com)",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lukeocodes/changelog-log.git"
+    },
+    "bugs": {
+        "url": "https://github.com/lukeocodes/changelog-log/issues"
+    },
+    "homepage": "https://github.com/lukeocodes/changelog-log#readme",
+    "main": "main.js",
+    "files": [
+        "action.yml",
+        "main.js",
+        "pnpm-lock.yaml"
+    ],
+    "engines": {
+        "node": ">=18",
+        "pnpm": ">=9"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "dependencies": {
+        "changelog-parser": "^3.0.1",
+        "js-yaml": "^4.1.0"
+    }
+}
