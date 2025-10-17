@@ -1,5 +1,8 @@
 name: "Changelog Log"
 description: "Detect new changelog entries and POST them as JSON to a webhook"
+branding:
+  icon: "bell"
+  color: "blue"
 inputs:
   file_globs:
     description: "Comma-separated glob patterns to watch"

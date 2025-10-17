@@ -35,17 +35,44 @@ function loadActionDefaults() {
   return defaults;
 }
 
-function readFileAtCommit(commitSha, filePath) {
-  if (!commitSha || /^0+$/.test(commitSha)) {
-    return "";
-  }
+function getAddedLines(beforeSha, afterSha, filePath) {
+  if (!afterSha) return "";
   try {
-    const out = execSync(`git show ${commitSha}:${filePath}`, {
+    // Get the unified diff showing only added lines
+    let diffCmd;
+    if (!beforeSha || /^0+$/.test(beforeSha)) {
+      // New file or initial commit - all content is "added"
+      diffCmd = `git show ${afterSha}:${filePath}`;
+    } else {
+      // Get diff between commits, showing added lines only
+      diffCmd = `git diff ${beforeSha} ${afterSha} -- ${filePath}`;
+    }
+
+    const diffOutput = execSync(diffCmd, {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     });
-    return out;
-  } catch (_) {
+
+    if (!beforeSha || /^0+$/.test(beforeSha)) {
+      // For new files, return full content
+      return diffOutput;
+    }
+
+    // Parse unified diff to extract only added lines
+    const lines = diffOutput.split("\n");
+    const addedLines = [];
+
+    for (const line of lines) {
+      // Lines starting with '+' but not '+++' are additions
+      if (line.startsWith("+") && !line.startsWith("+++")) {
+        // Remove the '+' prefix
+        addedLines.push(line.slice(1));
+      }
+    }
+
+    return addedLines.join("\n");
+  } catch (err) {
+    coreLog(`Failed to get diff for ${filePath}: ${String(err)}`);
     return "";
   }
 }
@@ -300,21 +327,25 @@ async function run() {
     const absPath = path.resolve(process.cwd(), relPath);
     if (!fs.existsSync(absPath)) continue;
 
-    const newContent = fs.readFileSync(absPath, "utf8");
-    const oldContent = readFileAtCommit(before, relPath);
+    // Get only the lines that were added in this commit
+    const addedContent = getAddedLines(before, after, relPath);
 
-    const newEntries = await splitEntriesWithParser(newContent, sepPattern);
-    const oldEntries = await splitEntriesWithParser(oldContent, sepPattern);
-
-    const oldHeaders = new Set(oldEntries.map((e) => e.header));
-    const newlyAdded = newEntries.filter((e) => !oldHeaders.has(e.header));
-
-    if (newlyAdded.length === 0) {
-      coreLog(`No new entries detected in ${relPath}`);
+    if (!addedContent || addedContent.trim().length === 0) {
+      coreLog(`No additions detected in ${relPath}`);
       continue;
     }
 
-    for (const entry of newlyAdded) {
+    coreLog(`Processing additions from ${relPath}`);
+
+    // Parse the added content to find changelog entries
+    const addedEntries = await splitEntriesWithParser(addedContent, sepPattern);
+
+    if (addedEntries.length === 0) {
+      coreLog(`No new changelog entries found in additions to ${relPath}`);
+      continue;
+    }
+
+    for (const entry of addedEntries) {
       const sections = parseSections(entry.text);
       const meta = extractVersionAndDate(entry.header);
       const payload = {
