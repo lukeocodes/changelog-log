@@ -1,6 +1,6 @@
 {
     "name": "@lukeocodes/changelog-log",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "GitHub Action: detect new changelog entries and post JSON webhooks",
     "keywords": [
         "github-action",
