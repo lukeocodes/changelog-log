@@ -1,8 +1,10 @@
-name: "Changelog Log"
+name: "Luke's Changelog Log"
 description: "Detect new changelog entries and POST them as JSON to a webhook"
+author: "Luke Oliff"
 branding:
-  icon: "bell"
-  color: "blue"
+  icon: "zap"
+  color: "black"
+
 inputs:
   file_globs:
     description: "Comma-separated glob patterns to watch"
@@ -46,6 +48,7 @@ inputs:
     description: "Log level (trace, debug, info, warn, error, fatal)"
     required: false
     default: "warn"
+
 runs:
   using: "composite"
   steps:
