@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.1...changelog-log-v0.1.2) (2025-10-18)
+
+
+### Features
+
+* add detailed request logging for webhook failures ([d25ea75](https://github.com/lukeocodes/changelog-log/commit/d25ea75224f7f978cadae7708fbd6f7026889794))
+
+
+### Bug Fixes
+
+* remove destination from webhook payload ([f5d456c](https://github.com/lukeocodes/changelog-log/commit/f5d456cf52b086f97dd8cf8f7f6ba73eec0d067c))
+* use 'route' instead of 'project' in webhook payload ([1d63406](https://github.com/lukeocodes/changelog-log/commit/1d63406fbbf673b715810c7c8aac01dc46a9bfe8))
+
 ## [0.1.1](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.0...changelog-log-v0.1.1) (2025-10-18)
 
 
