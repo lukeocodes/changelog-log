@@ -34,5 +34,5 @@ jobs:
                   # entry_separator_regex: "^##\\s+.*$"
                   # http_method: "POST"
                   # include_body_raw: "false"
-                  # log_level: "warn"  # trace, debug, info, warn, error, fatal
+                  log_level: "trace" # trace, debug, info, warn, error, fatal
                   # extra_body_json: '{"custom":"field"}'  # merge custom fields into payload
