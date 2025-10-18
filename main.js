@@ -140,8 +140,32 @@ async function run() {
     String(
       process.env.INCLUDE_BODY_RAW || defaults.include_body_raw || "false"
     ).toLowerCase() === "true";
+  const includeGithubContext =
+    String(
+      process.env.INCLUDE_GITHUB_CONTEXT ||
+        defaults.include_github_context ||
+        "true"
+    ).toLowerCase() === "true";
   const before = process.env.BEFORE || process.env.GITHUB_EVENT_BEFORE || "";
   const after = process.env.AFTER || process.env.GITHUB_SHA || "";
+
+  // Extract GitHub context from environment
+  const githubRepository = process.env.GITHUB_REPOSITORY || "";
+  const githubRepositoryOwner = process.env.GITHUB_REPOSITORY_OWNER || "";
+  const githubRef = process.env.GITHUB_REF || "";
+  const githubRefName = process.env.GITHUB_REF_NAME || "";
+  const githubWorkflow = process.env.GITHUB_WORKFLOW || "";
+  const githubActor = process.env.GITHUB_ACTOR || "";
+  const githubServerUrl = process.env.GITHUB_SERVER_URL || "https://github.com";
+
+  // Build project context with intelligent defaults
+  const projectName =
+    process.env.PROJECT_NAME ||
+    (githubRepository ? githubRepository.split("/")[1] : "");
+  const projectOwner = process.env.PROJECT_OWNER || githubRepositoryOwner;
+  const repositoryUrl =
+    process.env.REPOSITORY_URL ||
+    (githubRepository ? `${githubServerUrl}/${githubRepository}` : "");
 
   if (!webhookUrl) {
     throw new Error("WEBHOOK_URL is required");
@@ -211,8 +235,27 @@ async function run() {
         version: meta.version,
         date: meta.date,
         sections,
-        ...extraBody,
       };
+
+      // Add project context if available
+      if (projectName) payload.project = projectName;
+      if (projectOwner) payload.owner = projectOwner;
+      if (repositoryUrl) payload.repository = repositoryUrl;
+
+      // Add GitHub context if enabled
+      if (includeGithubContext) {
+        payload.github = {
+          repository: githubRepository,
+          ref: githubRef,
+          refName: githubRefName,
+          workflow: githubWorkflow,
+          actor: githubActor,
+        };
+      }
+
+      // Merge extra body fields last so they can override defaults
+      Object.assign(payload, extraBody);
+
       if (includeBodyRaw) payload.bodyRaw = entry.text;
 
       coreLog(`Posting changelog entry from ${relPath}: ${entry.header}`);

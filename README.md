@@ -34,15 +34,15 @@ jobs:
 
 ## Configuration
 
-| Input                   | Required | Default               | Description                      |
-| ----------------------- | -------- | --------------------- | -------------------------------- |
-| `webhook_url`           | Yes      | -                     | Destination URL for JSON payload |
-| `file_globs`            | No       | `CHANGELOG.md,**/...` | Changelog file patterns to watch |
-| `entry_separator_regex` | No       | `^##\s+.*$`           | Regex for entry headers          |
-| `http_method`           | No       | `POST`                | HTTP method (POST/PUT/PATCH)     |
-| `webhook_headers_json`  | No       | -                     | Extra headers as JSON string     |
+| Input                   | Required | Default               | Description                        |
+| ----------------------- | -------- | --------------------- | ---------------------------------- |
+| `webhook_url`           | Yes      | -                     | Destination URL for JSON payload   |
+| `file_globs`            | No       | `CHANGELOG.md,**/...` | Changelog file patterns to watch   |
+| `entry_separator_regex` | No       | `^##\s+.*$`           | Regex for entry headers            |
+| `http_method`           | No       | `POST`                | HTTP method (POST/PUT/PATCH)       |
+| `webhook_headers_json`  | No       | -                     | Extra headers as JSON string       |
 | `extra_body_json`       | No       | -                     | Extra fields to merge into payload |
-| `include_body_raw`      | No       | `false`               | Include unparsed entry text      |
+| `include_body_raw`      | No       | `false`               | Include unparsed entry text        |
 
 ## JSON Payload
 
@@ -82,11 +82,6 @@ This will merge the extra fields into the payload:
   ...
 }
 ```
-
-## Documentation
-
-- [Usage Guide](./docs/Usage%20guide.md) - Examples and troubleshooting
-- [Architecture Decisions](./docs/Architecture%20decisions.md) - Technical details
 
 ## Contributing
 

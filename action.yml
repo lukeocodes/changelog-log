@@ -29,6 +29,19 @@ inputs:
   extra_body_json:
     description: 'Optional JSON string to merge into the webhook payload body (e.g. {"project":"name","env":"prod"})'
     required: false
+  project_name:
+    description: "Project name to include in payload (defaults to repository name)"
+    required: false
+  project_owner:
+    description: "Project owner to include in payload (defaults to repository owner)"
+    required: false
+  repository_url:
+    description: "Repository URL to include in payload (defaults to GitHub repository URL)"
+    required: false
+  include_github_context:
+    description: "Include GitHub context (repository, ref, workflow, actor) in payload"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -61,5 +74,16 @@ runs:
         HTTP_METHOD: ${{ inputs.http_method }}
         INCLUDE_BODY_RAW: ${{ inputs.include_body_raw }}
         EXTRA_BODY_JSON: ${{ inputs.extra_body_json }}
+        PROJECT_NAME: ${{ inputs.project_name }}
+        PROJECT_OWNER: ${{ inputs.project_owner }}
+        REPOSITORY_URL: ${{ inputs.repository_url }}
+        INCLUDE_GITHUB_CONTEXT: ${{ inputs.include_github_context }}
         BEFORE: ${{ github.event.before }}
         AFTER: ${{ github.sha }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_REF: ${{ github.ref }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+        GITHUB_WORKFLOW: ${{ github.workflow }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
