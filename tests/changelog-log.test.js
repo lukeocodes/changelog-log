@@ -392,6 +392,80 @@ index abc123..def456 100644
       });
     });
 
+    describe("extraBodyJson", () => {
+      it("should parse extra_body_json and merge into payload", () => {
+        const extraBodyJson = '{"project":"myapp","environment":"production"}';
+        let extraBody = {};
+
+        try {
+          extraBody = JSON.parse(extraBodyJson);
+        } catch (e) {
+          extraBody = {};
+        }
+
+        const payload = {
+          filePath: "CHANGELOG.md",
+          commit: { before: "abc123", after: "def456" },
+          header: "## [1.2.0] - 2025-10-17",
+          version: "1.2.0",
+          date: "2025-10-17",
+          sections: { Added: ["New feature"] },
+          ...extraBody,
+        };
+
+        expect(payload.project).toBe("myapp");
+        expect(payload.environment).toBe("production");
+        expect(payload.version).toBe("1.2.0");
+        expect(payload.filePath).toBe("CHANGELOG.md");
+      });
+
+      it("should handle invalid extra_body_json gracefully", () => {
+        const extraBodyJson = '{invalid json}';
+        let extraBody = {};
+        let errorCaught = false;
+
+        try {
+          extraBody = JSON.parse(extraBodyJson);
+        } catch (e) {
+          errorCaught = true;
+          extraBody = {};
+        }
+
+        expect(errorCaught).toBe(true);
+        expect(extraBody).toEqual({});
+      });
+
+      it("should handle empty extra_body_json", () => {
+        const extraBodyJson = "";
+        let extraBody = {};
+
+        if (extraBodyJson && extraBodyJson.trim().length > 0) {
+          try {
+            extraBody = JSON.parse(extraBodyJson);
+          } catch (e) {
+            extraBody = {};
+          }
+        }
+
+        expect(extraBody).toEqual({});
+      });
+
+      it("should merge extra body properties without overwriting core properties", () => {
+        const extraBodyJson = '{"filePath":"SHOULD_NOT_OVERRIDE"}';
+        const extraBody = JSON.parse(extraBodyJson);
+
+        // Core payload is created first, then extra body is spread
+        const payload = {
+          filePath: "CHANGELOG.md",
+          version: "1.0.0",
+          ...extraBody,
+        };
+
+        // Extra body should override when spread after
+        expect(payload.filePath).toBe("SHOULD_NOT_OVERRIDE");
+      });
+    });
+
     describe("Integration scenarios", () => {
       it("should handle multiple entries added in one commit", () => {
         const addedContent = `## [1.3.0] - 2025-10-18

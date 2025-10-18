@@ -41,6 +41,7 @@ jobs:
 | `entry_separator_regex` | No       | `^##\s+.*$`           | Regex for entry headers          |
 | `http_method`           | No       | `POST`                | HTTP method (POST/PUT/PATCH)     |
 | `webhook_headers_json`  | No       | -                     | Extra headers as JSON string     |
+| `extra_body_json`       | No       | -                     | Extra fields to merge into payload |
 | `include_body_raw`      | No       | `false`               | Include unparsed entry text      |
 
 ## JSON Payload
@@ -56,6 +57,29 @@ jobs:
     "Added": ["New feature X"],
     "Fixed": ["Bug Z"]
   }
+}
+```
+
+### Custom Fields
+
+Use `extra_body_json` to add custom fields to the payload:
+
+```yaml
+- uses: lukeocodes/changelog-log@v1
+  with:
+    webhook_url: ${{ secrets.WEBHOOK_URL }}
+    extra_body_json: '{"project":"myapp","environment":"production"}'
+```
+
+This will merge the extra fields into the payload:
+
+```json
+{
+  "filePath": "CHANGELOG.md",
+  "version": "1.2.3",
+  "project": "myapp",
+  "environment": "production",
+  ...
 }
 ```
 

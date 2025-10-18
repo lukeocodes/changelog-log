@@ -27,7 +27,8 @@
     "main": "main.js",
     "files": [
         "action.yml",
-        "main.js"
+        "main.js",
+        "parser.js"
     ],
     "engines": {
         "node": ">=18",

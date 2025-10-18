@@ -26,6 +26,9 @@ inputs:
     description: "Include raw entry body in payload"
     required: false
     default: "false"
+  extra_body_json:
+    description: 'Optional JSON string to merge into the webhook payload body (e.g. {"project":"name","env":"prod"})'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -57,5 +60,6 @@ runs:
         WEBHOOK_HEADERS_JSON: ${{ inputs.webhook_headers_json }}
         HTTP_METHOD: ${{ inputs.http_method }}
         INCLUDE_BODY_RAW: ${{ inputs.include_body_raw }}
+        EXTRA_BODY_JSON: ${{ inputs.extra_body_json }}
         BEFORE: ${{ github.event.before }}
         AFTER: ${{ github.sha }}
