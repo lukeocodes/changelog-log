@@ -35,6 +35,28 @@ function loadActionDefaults() {
   return defaults;
 }
 
+function maskSensitiveHeaders(headers) {
+  const masked = {};
+  const sensitiveKeys = [
+    "authorization",
+    "x-api-key",
+    "x-dx-logs-key",
+    "api-key",
+    "apikey",
+    "token",
+  ];
+
+  for (const [key, value] of Object.entries(headers)) {
+    const lowerKey = key.toLowerCase();
+    if (sensitiveKeys.some((sk) => lowerKey.includes(sk))) {
+      masked[key] = value ? `${value.substring(0, 4)}...` : "[REDACTED]";
+    } else {
+      masked[key] = value;
+    }
+  }
+  return masked;
+}
+
 function postJSON(urlStr, method, extraHeaders, bodyObj) {
   return new Promise((resolve, reject) => {
     try {
@@ -63,7 +85,22 @@ function postJSON(urlStr, method, extraHeaders, bodyObj) {
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
             resolve({ statusCode: res.statusCode, body });
           } else {
-            reject(new Error(`HTTP ${res.statusCode}: ${body}`));
+            const requestDetails = {
+              url: `${u.protocol}//${u.hostname}${u.port ? `:${u.port}` : ""}${
+                u.pathname
+              }${u.search || ""}`,
+              method: options.method,
+              headers: maskSensitiveHeaders(options.headers),
+              body: bodyObj,
+            };
+            const errorMsg = `HTTP ${
+              res.statusCode
+            }: ${body}\n\nRequest Details:\n${JSON.stringify(
+              requestDetails,
+              null,
+              2
+            )}`;
+            reject(new Error(errorMsg));
           }
         });
       });
