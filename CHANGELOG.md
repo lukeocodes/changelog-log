@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.3...changelog-log-v0.1.4) (2025-10-18)
+
+
+### Features
+
+* automatically infer project context from GitHub environment ([2e97682](https://github.com/lukeocodes/changelog-log/commit/2e976826b1a78f55905624f2a295187b802b483d))
+
 ## [0.1.3](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.2...changelog-log-v0.1.3) (2025-10-18)
 
 
