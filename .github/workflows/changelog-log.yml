@@ -21,7 +21,7 @@ jobs:
               with:
                   webhook_url: ${{ secrets.CHANGELOG_WEBHOOK_URL }}
                   webhook_headers_json: '{"Content-Type":"application/json","X-DX-Logs-Key":"${{ secrets.CHANGELOG_SECRET }}"}'
-                  extra_body_json: '{"route":"community","destination":"changelog-slack"}'
+                  extra_body_json: '{"route":"community"}'
                   # Optional overrides:
                   # file_globs: "CHANGELOG.md,**/CHANGELOG*.md"
                   # entry_separator_regex: "^##\\s+.*$"
