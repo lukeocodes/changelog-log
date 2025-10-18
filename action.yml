@@ -42,6 +42,10 @@ inputs:
     description: "Include GitHub context (repository, ref, workflow, actor) in payload"
     required: false
     default: "true"
+  log_level:
+    description: "Log level (trace, debug, info, warn, error, fatal)"
+    required: false
+    default: "warn"
 runs:
   using: "composite"
   steps:
@@ -78,6 +82,7 @@ runs:
         PROJECT_OWNER: ${{ inputs.project_owner }}
         REPOSITORY_URL: ${{ inputs.repository_url }}
         INCLUDE_GITHUB_CONTEXT: ${{ inputs.include_github_context }}
+        LOG_LEVEL: ${{ inputs.log_level }}
         BEFORE: ${{ github.event.before }}
         AFTER: ${{ github.sha }}
         GITHUB_REPOSITORY: ${{ github.repository }}

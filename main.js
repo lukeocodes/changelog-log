@@ -30,7 +30,7 @@ function loadActionDefaults() {
     }
   } catch (err) {
     // If action.yml can't be read, we'll use inline fallbacks
-    coreLog(`Warning: Could not load action.yml defaults: ${String(err)}`);
+    log.warn(`Could not load action.yml defaults: ${String(err)}`);
   }
   return defaults;
 }
@@ -76,6 +76,20 @@ function postJSON(urlStr, method, extraHeaders, bodyObj) {
           extraHeaders || {}
         ),
       };
+
+      // Trace logging: full request details with masked headers
+      log.trace("HTTP request details:", {
+        url: `${u.protocol}//${u.hostname}${u.port ? `:${u.port}` : ""}${
+          u.pathname
+        }${u.search || ""}`,
+        method: options.method,
+        hostname: u.hostname,
+        port: options.port,
+        path: options.path,
+        headers: maskSensitiveHeaders(options.headers),
+        body: bodyObj,
+      });
+
       const req = (isHttps ? https : http).request(options, (res) => {
         let body = "";
         res.on("data", (chunk) => {
@@ -83,6 +97,8 @@ function postJSON(urlStr, method, extraHeaders, bodyObj) {
         });
         res.on("end", () => {
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            log.debug(`HTTP ${res.statusCode} response received`);
+            log.trace("Response body:", { statusCode: res.statusCode, body });
             resolve({ statusCode: res.statusCode, body });
           } else {
             const requestDetails = {
@@ -100,25 +116,109 @@ function postJSON(urlStr, method, extraHeaders, bodyObj) {
               null,
               2
             )}`;
+            log.error(`HTTP request failed with status ${res.statusCode}`);
             reject(new Error(errorMsg));
           }
         });
       });
-      req.on("error", reject);
+      req.on("error", (err) => {
+        log.error("HTTP request error:", err);
+        reject(err);
+      });
       req.write(data);
       req.end();
     } catch (err) {
+      log.error("Failed to create HTTP request:", err);
       reject(err);
     }
   });
 }
 
+// Logging system with levels
+const LOG_LEVELS = {
+  trace: 0,
+  debug: 1,
+  info: 2,
+  warn: 3,
+  error: 4,
+  fatal: 5,
+};
+
+let currentLogLevel = LOG_LEVELS.warn;
+
+function setLogLevel(level) {
+  const normalizedLevel = (level || "warn").toLowerCase();
+  if (LOG_LEVELS[normalizedLevel] !== undefined) {
+    currentLogLevel = LOG_LEVELS[normalizedLevel];
+  } else {
+    currentLogLevel = LOG_LEVELS.warn;
+    log.warn(`Invalid log level "${level}", defaulting to "warn"`);
+  }
+}
+
+const log = {
+  trace: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.trace) {
+      const output = data
+        ? `[TRACE] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[TRACE] ${msg}`;
+      process.stdout.write(`${output}\n`);
+    }
+  },
+  debug: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.debug) {
+      const output = data
+        ? `[DEBUG] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[DEBUG] ${msg}`;
+      process.stdout.write(`${output}\n`);
+    }
+  },
+  info: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.info) {
+      const output = data
+        ? `[INFO] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[INFO] ${msg}`;
+      process.stdout.write(`${output}\n`);
+    }
+  },
+  warn: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.warn) {
+      const output = data
+        ? `[WARN] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[WARN] ${msg}`;
+      process.stdout.write(`${output}\n`);
+    }
+  },
+  error: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.error) {
+      const output = data
+        ? `[ERROR] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[ERROR] ${msg}`;
+      process.stderr.write(`${output}\n`);
+    }
+  },
+  fatal: (msg, data) => {
+    if (currentLogLevel <= LOG_LEVELS.fatal) {
+      const output = data
+        ? `[FATAL] ${msg}\n${JSON.stringify(data, null, 2)}`
+        : `[FATAL] ${msg}`;
+      process.stderr.write(`${output}\n`);
+    }
+  },
+};
+
+// Legacy function for backwards compatibility during migration
 function coreLog(msg) {
-  process.stdout.write(`${msg}\n`);
+  log.info(msg);
 }
 
 async function run() {
   const defaults = loadActionDefaults();
+
+  // Set log level first so it applies to all subsequent logging
+  const logLevel = process.env.LOG_LEVEL || defaults.log_level || "warn";
+  setLogLevel(logLevel);
+  log.debug(`Log level set to: ${logLevel}`);
 
   const fileGlobs =
     process.env.FILE_GLOBS ||
@@ -175,8 +275,9 @@ async function run() {
   if (headersJson && headersJson.trim().length > 0) {
     try {
       extraHeaders = JSON.parse(headersJson);
+      log.debug("Parsed webhook headers");
     } catch (e) {
-      coreLog(
+      log.warn(
         `Invalid WEBHOOK_HEADERS_JSON. Using empty headers. Error: ${String(e)}`
       );
       extraHeaders = {};
@@ -187,8 +288,9 @@ async function run() {
   if (extraBodyJson && extraBodyJson.trim().length > 0) {
     try {
       extraBody = JSON.parse(extraBodyJson);
+      log.debug("Parsed extra body JSON", extraBody);
     } catch (e) {
-      coreLog(
+      log.warn(
         `Invalid EXTRA_BODY_JSON. Using empty extra body. Error: ${String(e)}`
       );
       extraBody = {};
@@ -197,11 +299,12 @@ async function run() {
 
   const changed = filterByGlobs(getChangedFiles(before, after), fileGlobs);
   if (changed.length === 0) {
-    coreLog("No changed changelog files detected.");
+    log.info("No changed changelog files detected.");
     return;
   }
 
-  coreLog(`Changed candidate files: ${JSON.stringify(changed)}`);
+  log.info(`Changed candidate files: ${JSON.stringify(changed)}`);
+  log.debug("File processing starting", { before, after, fileGlobs });
 
   for (const relPath of changed) {
     const absPath = path.resolve(process.cwd(), relPath);
@@ -211,19 +314,26 @@ async function run() {
     const addedContent = getAddedLines(before, after, relPath);
 
     if (!addedContent || addedContent.trim().length === 0) {
-      coreLog(`No additions detected in ${relPath}`);
+      log.debug(`No additions detected in ${relPath}`);
       continue;
     }
 
-    coreLog(`Processing additions from ${relPath}`);
+    log.info(`Processing additions from ${relPath}`);
+    log.trace("Added content:", { relPath, addedContent });
 
     // Parse the added content to find changelog entries
     const addedEntries = await splitEntriesWithParser(addedContent, sepPattern);
 
     if (addedEntries.length === 0) {
-      coreLog(`No new changelog entries found in additions to ${relPath}`);
+      log.debug(`No new changelog entries found in additions to ${relPath}`);
       continue;
     }
+
+    log.info(
+      `Found ${addedEntries.length} new changelog ${
+        addedEntries.length === 1 ? "entry" : "entries"
+      } in ${relPath}`
+    );
 
     for (const entry of addedEntries) {
       const sections = parseSections(entry.text);
@@ -258,7 +368,15 @@ async function run() {
 
       if (includeBodyRaw) payload.bodyRaw = entry.text;
 
-      coreLog(`Posting changelog entry from ${relPath}: ${entry.header}`);
+      log.info(`Posting changelog entry from ${relPath}: ${entry.header}`);
+      log.debug("Payload summary:", {
+        version: payload.version,
+        date: payload.date,
+        project: payload.project,
+        sectionsCount: Object.keys(payload.sections).length,
+      });
+      log.trace("Complete payload:", payload);
+
       try {
         const res = await postJSON(
           webhookUrl,
@@ -266,15 +384,16 @@ async function run() {
           extraHeaders,
           payload
         );
-        coreLog(`Posted successfully: HTTP ${res.statusCode}`);
+        log.info(`Posted successfully: HTTP ${res.statusCode}`);
       } catch (err) {
-        coreLog(`Failed to post entry: ${String(err)}`);
+        log.error(`Failed to post entry: ${String(err)}`);
       }
     }
   }
 }
 
 run().catch((err) => {
+  log.fatal("Action failed with fatal error:", err);
   process.stderr.write(`${String(err)}\n`);
   process.exit(1);
 });
