@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.5...changelog-log-v0.1.6) (2025-10-18)
+
+
+### Features
+
+* prepare action.yml for GitHub Actions marketplace ([8ed3b14](https://github.com/lukeocodes/changelog-log/commit/8ed3b147d17f504089fed8698567e64af7a1f089))
+
+
+### Bug Fixes
+
+* add test job to release-please workflow ([6ff874b](https://github.com/lukeocodes/changelog-log/commit/6ff874bfeb1dcd0b6e033cb8729e704866bc42ab))
+
 ## [0.1.5](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.4...changelog-log-v0.1.5) (2025-10-18)
 
 
