@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.6...changelog-log-v0.1.7) (2025-10-21)
+
+
+### Bug Fixes
+
+* remove pnpm cache to prevent errors in consuming repositories ([ed7a418](https://github.com/lukeocodes/changelog-log/commit/ed7a41834221eddc9e0c4fff49ddd69f4f088515))
+
 ## [0.1.6](https://github.com/lukeocodes/changelog-log/compare/changelog-log-v0.1.5...changelog-log-v0.1.6) (2025-10-18)
 
 
